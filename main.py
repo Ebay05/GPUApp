@@ -19,6 +19,15 @@ KATEGORIE = {
     "Płyty główne":           "https://www.morele.net/kategoria/plyty-glowne-44/",
 }
 
+def get_max_pages(url: str) -> int:
+    try:
+        response = requests.get(url, headers=HEADERS, timeout=10)
+        soup = BeautifulSoup(response.text, "lxml")
+        pages = soup.select(".pagination-btn-nolink-anchor")
+        return max((int(p.text.strip()) for p in pages if p.text.strip().isdigit()), default=1)
+    except Exception:
+        return 1
+
 def scrape_kategoria(url: str, strony: int = 2) -> list[dict]:
     produkty = []
 
@@ -34,11 +43,10 @@ def scrape_kategoria(url: str, strony: int = 2) -> list[dict]:
         soup = BeautifulSoup(response.text, "lxml")
 
         for card in soup.select(".cat-product-card"):
-            name  = card.select_one(".product-title")
+            name  = card.select_one(".cat-product-name__header")
             price = card.select_one(".price-new")
 
             if name and price:
-                # Wyciągamy samą liczbę z ceny np. "1 234,56 zł" -> 1234.56
                 price_text = price.text.strip()
                 price_text = price_text.replace("\xa0", "").replace(" ", "").replace("zł", "").replace(",", ".")
                 try:
@@ -63,7 +71,12 @@ st.write("Wybierz komponent i sprawdź ceny na morele.net")
 
 komponent = st.selectbox("Wybierz komponent:", list(KATEGORIE.keys()))
 
-strony = st.slider("Ile stron przeszukać?", min_value=1, max_value=5, value=2)
+with st.spinner("Pobieram liczbę stron..."):
+    url = KATEGORIE[komponent]
+    max_strony = get_max_pages(url)
+
+st.write(f"Dostępne strony: **{max_strony}**")
+strony = st.slider("Ile stron przeszukać?", min_value=1, max_value=max_strony, value=1)
 
 if st.button("🔍 Szukaj cen"):
     with st.spinner("Scrapuję morele.net..."):
