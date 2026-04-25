@@ -43,21 +43,17 @@ def scrape_kategoria(url: str, strony: int = 2) -> list[dict]:
         soup = BeautifulSoup(response.text, "lxml")
 
         for card in soup.select(".cat-product-card"):
-            name  = card.select_one(".cat-product-name__header")
-            price = card.select_one(".price-new")
+            name  = card.select_one(".cat-product-name__header a")
+            price_val = card.get("data-product-price")
 
-            if name and price:
-                price_text = price.text.strip()
-                price_text = price_text.replace("\xa0", "").replace(" ", "").replace("zł", "").replace(",", ".")
+            if name and price_val:
                 try:
-                    price_val = float(price_text)
-                except ValueError:
-                    continue
-
-                produkty.append({
+                    produkty.append({
                     "nazwa": name.text.strip(),
                     "cena":  price_val,
                 })
+                except ValueError:
+                    continue
 
         time.sleep(1)
 
