@@ -42,7 +42,6 @@ def scrape_kategoria(url: str, strony: int = 2) -> list[dict]:
 
         soup = BeautifulSoup(response.text, "lxml")
 
-        # DEBUG — usuń po naprawieniu
         karty = soup.select(".cat-product.card")
         st.write(f"Strona {strona} — znaleziono kart: {len(karty)}, status: {response.status_code}")
 
