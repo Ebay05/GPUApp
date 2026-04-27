@@ -43,7 +43,7 @@ def scrape_kategoria(url: str, strony: int = 2) -> list[dict]:
         soup = BeautifulSoup(response.text, "lxml")
 
         karty = soup.select(".cat-product.card")
-        st.write(f"Strona {strona} — znaleziono kart: {len(karty)}, status: {response.status_code}")
+        st.write(f"Strona {strona} / {max_strony}")
 
         for card in karty:
             name      = card.select_one(".cat-product-name__header a")
